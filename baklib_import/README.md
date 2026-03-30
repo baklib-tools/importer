@@ -25,7 +25,7 @@
 
 ```bash
 pip install -r ../requirements.txt
-cp config.example.json config.json
+cp ../config.example.json ../config.json
 # 编辑 config.json
 python import_files_to_site.py --excel ./list.xlsx --config config.json
 ```

@@ -41,6 +41,7 @@ from dam_upload import DAMUpload
 from site_pages import SitePages
 from site_tags import SiteTags
 from create_directories_and_tags import ensure_directories_and_tags
+from project_paths import resolve_config_path
 
 
 # 配置日志
@@ -135,6 +136,7 @@ def main():
 示例：
   # 使用配置文件
   python import_files_to_dam_and_pages.py --excel file_list.xlsx --config config.json
+  # （config.json 放在项目根目录；相对路径相对项目根，与当前工作目录无关）
   
   # 模拟运行（不实际上传）
   python import_files_to_dam_and_pages.py --excel file_list.xlsx --api-key "access_key:secret_key" --site-id 123 --dry-run
@@ -148,7 +150,10 @@ def main():
     )
     
     parser.add_argument('--excel', required=True, help='Excel 文件路径')
-    parser.add_argument('--config', help='配置文件路径（JSON格式，可选）')
+    parser.add_argument(
+        '--config',
+        help='配置文件路径（JSON，可选）；相对路径相对于项目根目录（与当前工作目录无关）',
+    )
     parser.add_argument('--api-key', help='API 密钥（格式：access_key:secret_key，如果使用配置文件则不需要）')
     parser.add_argument('--site-id', type=int, help='站点 ID（如果使用配置文件则从配置文件读取）')
     parser.add_argument('--base-url', 
@@ -158,9 +163,9 @@ def main():
     parser.add_argument('--path-column', 
                        help='文件路径列（默认：E）')
     parser.add_argument('--status-column', 
-                       help='导入状态列（如果未指定，自动添加到最后一列）')
+                       help='导入状态列（如果未指定，无表头「导入状态」时自动插入到最左侧）')
     parser.add_argument('--dam-id-column', 
-                       help='DAM ID列（如果未指定，自动添加到最后一列）')
+                       help='DAM ID列（如果未指定，无表头「DAM ID」时紧挨状态列自动插入）')
     parser.add_argument('--delay', type=float, 
                        help='每次上传之间的延迟（秒，默认：0.5）')
     parser.add_argument('--path-prefix', 
@@ -182,13 +187,15 @@ def main():
                        help='Excel 定时保存间隔（秒，默认：30）')
     
     args = parser.parse_args()
-    
+
+    config_path = resolve_config_path(args.config)
+
     # 加载配置文件（如果提供）
     config = None
-    if args.config:
-        config = load_config(args.config)
+    if config_path:
+        config = load_config(config_path)
         logger_temp = setup_logging(None)
-        logger_temp.info(f"已加载配置文件：{args.config}")
+        logger_temp.info(f"已加载配置文件：{config_path}")
     
     # 从配置文件或命令行参数获取配置值
     api_key = None
@@ -226,7 +233,7 @@ def main():
     else:
         # 从命令行参数读取
         if not args.api_key:
-            parser.error("必须提供 --api-key 或 --config 参数")
+            parser.error("必须提供 --api-key 或 --config 参数（配置文件放在项目根目录，见 --help）")
         api_key = args.api_key
         base_url = args.base_url or 'https://open.baklib.com/api/v1'
         if not args.site_id:
@@ -352,8 +359,8 @@ def main():
     print("[导入参数确认]")
     print("=" * 80)
     print(f"[文件] Excel 文件路径: {args.excel}")
-    if args.config:
-        print(f"[配置] 配置文件路径: {args.config}")
+    if config_path:
+        print(f"[配置] 配置文件路径: {config_path}")
     print(f"[API] API 基础地址: {base_url}")
     print(f"[站点] 站点 ID: {site_id}")
     print(f"[行] 开始行: {start_row}")

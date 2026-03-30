@@ -50,6 +50,7 @@ from dam_upload import DAMUpload
 from site_pages import SitePages
 from site_tags import SiteTags
 from create_directories_and_tags import ensure_directories_and_tags
+from project_paths import resolve_config_path
 
 
 def setup_logging(log_file: str = None, debug: bool = False):
@@ -188,7 +189,10 @@ def main():
 
     parser.add_argument('--excel', help='单个 Excel 文件路径')
     parser.add_argument('--directory', help='Excel 所在目录（批量处理该目录下所有 .xlsx）')
-    parser.add_argument('--config', help='配置文件路径（JSON格式，可选）')
+    parser.add_argument(
+        '--config',
+        help='配置文件路径（JSON，可选）；相对路径相对于项目根目录（与当前工作目录无关）',
+    )
     parser.add_argument('--api-key', help='API 密钥（格式：access_key:secret_key，如果使用配置文件则不需要）')
     parser.add_argument('--site-id', type=int, help='站点 ID（可选：不提供则跳过站点栏目/站点标签）')
     parser.add_argument('--base-url', help='API 基础地址（如果使用配置文件则从配置文件读取）')
@@ -222,8 +226,9 @@ def main():
 
     # 加载配置
     config = None
-    if args.config:
-        config = load_config(args.config)
+    config_path = resolve_config_path(args.config)
+    if config_path:
+        config = load_config(config_path)
 
     # 参数合并（命令行优先）
     api_key = None
@@ -283,8 +288,8 @@ def main():
         print(f"[文件] Excel 文件路径: {excel_files[0]}")
     else:
         print(f"[目录] Excel 目录（共 {len(excel_files)} 个文件）: {args.directory}")
-    if args.config:
-        print(f"[配置] 配置文件路径: {args.config}")
+    if config_path:
+        print(f"[配置] 配置文件路径: {config_path}")
     print(f"[API] API 基础地址: {base_url}")
     print(f"[站点] 站点 ID: {site_id if site_id else '（跳过站点操作）'}")
     print(f"[行] 开始行: {start_row}")

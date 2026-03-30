@@ -27,7 +27,7 @@ pip install openpyxl requests
 
 ## 配置文件示例
 
-复制 `config.example.json` 为 `config.json`，填写：
+在项目根目录复制 `config.example.json` 为 `config.json`，填写：
 
 - `site_id`：目标站点 ID
 - `api.access_key` / `api.secret_key`：Open API 密钥
@@ -37,20 +37,24 @@ pip install openpyxl requests
 
 脚本支持 UTF-8 BOM、GBK 等多种编码读取 JSON（Windows 记事本保存的 UTF-8 BOM 亦可）。
 
+`--config` 传入相对路径时，相对于**项目根目录**解析（与当前工作目录无关）；也可传入绝对路径。
+
 ## 命令示例
+
+在仓库根目录执行：
 
 ```bash
 # DAM + Page（推荐默认）
-python import_files_to_site.py --excel ./file_list.xlsx --config config.json
+python3 baklib_import/import_files_to_site.py --excel ./file_list.xlsx --config config.json
 
 # 仅 DAM
-python import_files_to_dam.py --excel ./file_list.xlsx --config config.json
+python3 baklib_import/import_files_to_dam.py --excel ./file_list.xlsx --config config.json
 ```
 
 不使用配置文件时：
 
 ```bash
-python import_files_to_site.py \
+python3 baklib_import/import_files_to_site.py \
   --excel ./file_list.xlsx \
   --api-key "access_key:secret_key" \
   --site-id 123 \
@@ -60,8 +64,8 @@ python import_files_to_site.py \
 测试：
 
 ```bash
-python import_files_to_site.py --excel ./file_list.xlsx --config config.json --dry-run
-python import_files_to_site.py --excel ./file_list.xlsx --config config.json --max-rows 10
+python3 baklib_import/import_files_to_site.py --excel ./file_list.xlsx --config config.json --dry-run
+python3 baklib_import/import_files_to_site.py --excel ./file_list.xlsx --config config.json --max-rows 10
 ```
 
 ## 预创建目录与标签（可选）
@@ -69,9 +73,9 @@ python import_files_to_site.py --excel ./file_list.xlsx --config config.json --m
 在批量上传前减少重复 API 查询：
 
 ```bash
-python prepare_directories_and_tags.py --excel ./file_list.xlsx --config config.json
+python3 baklib_import/prepare_directories_and_tags.py --excel ./file_list.xlsx --config config.json
 # 或目录下全部 xlsx
-python prepare_directories_and_tags.py --directory ./excel_dir --config config.json
+python3 baklib_import/prepare_directories_and_tags.py --directory ./excel_dir --config config.json
 ```
 
 ## 执行结果

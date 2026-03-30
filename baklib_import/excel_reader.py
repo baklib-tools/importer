@@ -26,6 +26,14 @@ except ImportError:
     OPENPYXL_AVAILABLE = False
 
 
+def _shift_column_letter(column: str, delta: int) -> str:
+    """将列字母按 delta 右移（delta 可为负）。"""
+    idx = utils.column_index_from_string(column.strip().upper()) + delta
+    if idx < 1:
+        raise ValueError(f"列偏移无效: {column!r} + {delta}")
+    return utils.get_column_letter(idx)
+
+
 class ExcelReader:
     """Excel 文件读取器"""
     
@@ -52,7 +60,7 @@ class ExcelReader:
         self.wb = openpyxl.load_workbook(self.excel_path)
         self.ws = self.wb.active
     
-    def ensure_status_columns(self, status_column: str = None, dam_id_column: str = None) -> Tuple[str, str]:
+    def ensure_status_columns(self, status_column: str = None, dam_id_column: str = None) -> Tuple[str, str, int]:
         """
         确保导入状态列和DAM ID列存在
         
@@ -61,36 +69,47 @@ class ExcelReader:
             dam_id_column: DAM ID列（如果为None，先查找现有列，找不到则自动添加）
         
         Returns:
-            (status_column, dam_id_column) 列名
+            (status_column, dam_id_column, left_columns_inserted)
+            left_columns_inserted: 本次在表头左侧新插入的列数（0 或 2），用于解析路径列偏移
         """
-        # 如果未指定列，先查找是否已存在
+        left_inserted = 0
+
+        # 如果未指定列，先查找是否已存在；不存在则在**最左侧**插入两列（便于深目录时查看状态）
         if status_column is None:
             status_column = self._find_column_by_header('导入状态')
             if status_column is None:
-                last_col = self.ws.max_column if self.ws.max_column > 0 else 1
-                status_col_num = last_col + 1
-                status_column = utils.get_column_letter(status_col_num)
-        
+                self.ws.insert_cols(1, 2)
+                left_inserted = 2
+                status_column = 'A'
+                dam_id_column = 'B'
+                sh = self.ws['A1']
+                dh = self.ws['B1']
+                sh.value = '导入状态'
+                sh.font = styles.Font(bold=True)
+                dh.value = 'DAM ID'
+                dh.font = styles.Font(bold=True)
+                return status_column, dam_id_column, left_inserted
+
         if dam_id_column is None:
             dam_id_column = self._find_column_by_header('DAM ID')
             if dam_id_column is None:
                 status_col_num = utils.column_index_from_string(status_column)
                 dam_id_col_num = status_col_num + 1
                 dam_id_column = utils.get_column_letter(dam_id_col_num)
-        
+
         # 设置标题行（第1行）
         status_header = self.ws[f'{status_column}1']
         dam_id_header = self.ws[f'{dam_id_column}1']
-        
+
         if not status_header.value or str(status_header.value).strip() != '导入状态':
             status_header.value = '导入状态'
             status_header.font = styles.Font(bold=True)
-        
+
         if not dam_id_header.value or str(dam_id_header.value).strip() != 'DAM ID':
             dam_id_header.value = 'DAM ID'
             dam_id_header.font = styles.Font(bold=True)
-        
-        return status_column, dam_id_column
+
+        return status_column, dam_id_column, left_inserted
     
     def _find_column_by_header(self, header_text: str) -> Optional[str]:
         """
@@ -129,8 +148,26 @@ class ExcelReader:
             - dam_id: DAM ID（如果已存在）
         """
         # 确保状态列存在
-        status_column, dam_id_column = self.ensure_status_columns(status_column, dam_id_column)
-        
+        status_column, dam_id_column, left_inserted = self.ensure_status_columns(
+            status_column, dam_id_column
+        )
+
+        # 路径列：优先按表头「路径」定位（插入状态列后原 E 列会右移，表头仍可靠）
+        path_col_resolved = self._find_column_by_header('路径')
+        if path_col_resolved is None:
+            path_col_resolved = (
+                _shift_column_letter(path_column, left_inserted)
+                if left_inserted
+                else path_column
+            )
+        if left_inserted:
+            logging.info(
+                "已在工作表最左侧插入「导入状态」「DAM ID」列；"
+                "文件路径列使用 %s（配置为 %s）",
+                path_col_resolved,
+                path_column,
+            )
+
         file_list = []
         processed_count = 0
         
@@ -141,7 +178,7 @@ class ExcelReader:
                 break
             
             # 读取文件路径
-            path_cell = self.ws[f'{path_column}{row_idx}']
+            path_cell = self.ws[f'{path_col_resolved}{row_idx}']
             if not path_cell.value:
                 continue
             

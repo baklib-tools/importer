@@ -26,6 +26,8 @@ from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 
+from project_paths import resolve_config_path
+
 
 # 配置日志
 def setup_logging(log_file: str = None, debug: bool = False):
@@ -214,7 +216,11 @@ def main():
     )
     
     parser.add_argument('--directory', required=True, help='包含 Excel 文件的目录路径')
-    parser.add_argument('--config', required=True, help='配置文件路径（JSON格式）')
+    parser.add_argument(
+        '--config',
+        required=True,
+        help='配置文件路径（JSON）；相对路径相对于项目根目录（与当前工作目录无关）',
+    )
     parser.add_argument('--script', 
                        default='import_files_to_dam_and_pages.py',
                        help='导入脚本路径（默认：import_files_to_dam_and_pages.py）')
@@ -233,12 +239,14 @@ def main():
     
     # 设置日志
     logger = setup_logging(args.log_file, debug=args.debug)
-    
+
+    config_path = resolve_config_path(args.config)
+
     logger.info("=" * 80)
     logger.info("批量文件导入脚本")
     logger.info("=" * 80)
     logger.info(f"目录路径：{args.directory}")
-    logger.info(f"配置文件：{args.config}")
+    logger.info(f"配置文件：{config_path}")
     logger.info(f"导入脚本：{args.script}")
     if extra_args:
         logger.info(f"额外参数：{' '.join(extra_args)}")
@@ -246,8 +254,8 @@ def main():
     logger.info("")
     
     # 检查配置文件是否存在
-    if not os.path.exists(args.config):
-        logger.error(f"配置文件不存在：{args.config}")
+    if not config_path or not os.path.exists(config_path):
+        logger.error(f"配置文件不存在：{config_path or args.config}")
         sys.exit(1)
     
     # 检查导入脚本是否存在
@@ -312,7 +320,7 @@ def main():
             # 执行导入脚本
             exit_code = execute_import_script(
                 excel_file=file_path,
-                config_file=args.config,
+                config_file=config_path,
                 script_path=script_path,
                 extra_args=extra_args,
                 logger=logger,

@@ -1,66 +1,119 @@
+<p align="center">
+  <img src="./docs/assets/baklib-importer-logo.png" alt="Baklib Importer" width="640">
+</p>
+
 # Baklib Importer
 
-面向「海量文件迁入 Baklib」的一套开源工具：**先在本地把路径清单变成可协作填写的 Excel，再通过 Open API 批量导入 DAM 与站点**。
+**把本机、NAS 或挂载盘上的海量文件，按原有文件夹层级迁入 Baklib 资源库（DAM），并可选同步创建站点资源页。**
 
-本仓库从内部客户实施流程整理而来，已去除客户专属信息与密钥，便于在 GitHub 上公开使用。
+适合：资料盘、共享盘、归档目录一次性整理进知识库；清单可协作、导入可断点、规则可配置。
 
-## 包含什么
+---
 
-| 目录 | 内容 |
+## 这套工具解决什么问题？
+
+| 场景 | 说明 |
 |------|------|
-| `preprocessing/` | `analyze_file_list.py`：清单统计；`extract-file-paths.py`：按类型拆分并生成带「打标签 / 新目录」的 Excel。**不访问网络。** |
-| `baklib_import/` | 基于 Excel 调用 Baklib API，上传 DAM 并创建站点资源页等。需配置 API 密钥。 |
-| `docs/` | 流程说明、Excel 列说明、Windows 排障等。 |
+| 📂 **目录结构要保留** | 去掉盘符/共享根等「路径前缀」后，按剩余路径在 Baklib 里建 **DAM 集合（目录）**；层级过深时按系统限制做截断（见配置 `max_depth`）。 |
+| 🏷️ **标签与目录可定制** | 预处理生成的 Excel 含 **「打标签」「新目录」**；可在表里批量填，覆盖/补充仅靠路径自动推导的结果。 |
+| 🖥️ **NAS / 多环境** | 支持 **路径前缀**（`path_prefix`）、**跳过部分子目录**（`skip_directories`）；Excel 里是服务器路径、实际在本机挂载目录读文件时，可用 **路径映射**（`excel_path_prefix` + `local_path_root`）。 |
+| 📤 **先整理、再上传** | **预处理脚本全程离线**；导入脚本走 **Open API**，需密钥。可先 `--dry-run` / `--max-rows` 小批量试跑。 |
+
+一句话：**从「路径清单 → 可编辑 Excel → API 批量导入」**，把文件搬进 Baklib，并尽量让线上目录与你磁盘上的组织方式一致。
+
+---
+
+## 工作流程（四步）
+
+```
+导出路径清单（每行一个绝对路径，UTF-8）
+        ↓
+预处理：分类、拆表、生成带「打标签 / 新目录」的 Excel（可选：先做统计）
+        ↓
+在 Excel 中填写或批量调整标签与目标目录
+        ↓
+配置 API → 导入到 DAM（必选） / 同时创建站点页面（可选）
+```
+
+- **仅资源库**：`baklib_import/import_files_to_dam.py`  
+- **DAM + 站点页面**：`baklib_import/import_files_to_site.py`（CMS 站点；Wiki 站点请仅用 DAM 导入）
+
+---
+
+## 仓库里有什么？
+
+| 路径 | 作用 |
+|------|------|
+| `preprocessing/` | 📊 清单分析、按类型拆分、生成 Excel；**不访问网络**。 |
+| `baklib_import/` | 🚀 读 Excel、调 Baklib Open API：上传文件、建目录/标签、（可选）建栏目与资源页。 |
+| `docs/` | 📖 流程、Excel 列说明、导入参数、排障等。 |
+| `config.example.json` | ⚙️ 配置模板；复制为项目根目录的 `config.json` 后填写密钥与 `path_prefix` 等。 |
+
+---
 
 ## 环境要求
 
-- Python 3.8+（建议 3.10+）
-- 依赖：`pip install -r requirements.txt`（`openpyxl`、`requests`）
+- Python **3.8+**（建议 3.10+）
+- 依赖：`pip install -r requirements.txt`（含 `openpyxl`、`requests`）
 
-## 典型流程
+---
 
-1. **导出路径清单**：每行一个文件路径的 UTF-8 文本（Windows / macOS / Linux 均可）。  
-2. **预处理**（在仓库根目录 `importer/` 下执行）：
+## 快速开始（在项目根目录 `importer/`）
 
-   ```bash
-   python3 preprocessing/extract-file-paths.py ./file_list.txt --split 10000 --format excel
-   ```
+**1）准备路径清单**  
+例如 macOS/Linux：`find /你的根目录 -type f > file_list.txt`（见 `docs/02-file-list-mac-linux.md`）
 
-3. **业务填写 Excel**：在「打标签」「新目录」列中完成分类与目录规划（见 `docs/03-excel-guide.md`）。  
-4. **API 导入**：
+**2）预处理 → 得到 Excel**
 
-   ```bash
-   cd baklib_import
-   cp config.example.json config.json
-   # 编辑 config.json：site_id、密钥、path_prefix 等
-   # DAM + Page
-   python import_files_to_site.py --excel ./your.xlsx --config config.json
+```bash
+python3 preprocessing/extract-file-paths.py ./file_list.txt --split 10000 --format excel
+```
 
-   # 仅 DAM
-   python import_files_to_dam.py --excel ./your.xlsx --config config.json
-   ```
+**3）填写 Excel**  
+打开生成目录下的 `.xlsx`，按需填写「打标签」「新目录」（见 `docs/03-excel-guide.md`）
 
-首次建议 `--dry-run` 或 `--max-rows 10` 试跑。
+**4）配置并导入**（`config.json` 放在**项目根目录**；`--config` 的相对路径相对项目根，可在任意目录执行命令）
+
+```bash
+cp config.example.json config.json
+# 编辑 config.json：site_id、access_key、secret_key、import.path_prefix 等
+
+python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config config.json
+# 仅 DAM：python3 baklib_import/import_files_to_dam.py --excel ./your.xlsx --config config.json
+```
+
+首次建议：`--dry-run` 或 `--max-rows 10` 试跑。
+
+更多参数（跳过确认、列映射、延迟、预创建目录等）见 `docs/05-import-runbook.md`。
+
+---
 
 ## 文档索引
 
-- `docs/00-index.md` — 文档入口（按阅读顺序）  
-- `docs/01-workflow-sop.md` — 端到端流程  
-- `docs/03-excel-guide.md` — Excel 列含义与填写约定  
-- `docs/02-file-list-mac-linux.md` — macOS/Linux 生成路径清单  
-- `docs/04-import-quickstart.md` — API 导入快速开始  
-- `docs/05-import-runbook.md` — 导入脚本参数与行为说明  
-- `docs/06-windows-troubleshooting.md` — Windows 常见问题  
-- `preprocessing/README.md` — 预处理脚本说明  
+| 文档 | 内容 |
+|------|------|
+| `docs/00-index.md` | 总入口与阅读顺序 |
+| `docs/01-workflow-sop.md` | 端到端流程（SOP） |
+| `docs/03-excel-guide.md` | Excel 列含义与填写约定 |
+| `docs/02-file-list-mac-linux.md` | macOS / Linux 生成清单 |
+| `docs/04-import-quickstart.md` | API 导入快速开始 |
+| `docs/05-import-runbook.md` | 命令行参数与行为说明 |
+| `docs/06-windows-troubleshooting.md` | Windows 常见问题 |
+| `preprocessing/README.md` | 预处理脚本说明 |
+| `baklib_import/README.md` | 导入模块文件说明 |
+
+---
 
 ## 安全与隐私
 
-- **切勿**将真实 `config.json`、日志或含内部路径的客户 Excel 提交到公开仓库。  
-- 仓库内仅保留 `config.example.json` 占位符。
+- 🔒 **切勿**将真实 `config.json`、运行日志或含内部路径的客户 Excel 提交到公开仓库。  
+- 仓库内仅保留 `config.example.json`；本地密钥文件为项目根目录的 `config.json`（已被 `.gitignore`）。
+
+---
 
 ## 许可证
 
-发布前请在仓库根目录补充 `LICENSE`（若组织有统一许可证策略，由维护者添加）。
+本项目采用 **MIT License**，详见仓库根目录 [`LICENSE`](LICENSE) 文件。
 
 ---
 

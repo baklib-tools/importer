@@ -1,6 +1,6 @@
 # Baklib 导入脚本：快速开始
 
-在 `baklib_import/` 目录下完成配置与执行（所有 `.py` 须在同一目录）。
+配置文件放在**项目根目录**；导入脚本在 `baklib_import/` 下，可在仓库根目录用 `python3 baklib_import/import_files_to_site.py` 调用（`--config` 的相对路径相对于项目根，与当前工作目录无关）。
 
 考虑到不同客户需求，入口拆分为两个脚本：
 
@@ -24,8 +24,10 @@ pip install -r requirements.txt
 
 ## 3. 配置文件
 
+在项目根目录：
+
 ```bash
-cd baklib_import
+cd /path/to/importer
 cp config.example.json config.json
 # 编辑 config.json：填写 site_id、access_key、secret_key、path_prefix 等
 ```
@@ -33,11 +35,12 @@ cp config.example.json config.json
 ## 4. 执行导入
 
 ```bash
+cd /path/to/importer
 # DAM + Page（推荐默认）
-python import_files_to_site.py --excel ./your_list.xlsx --config config.json
+python3 baklib_import/import_files_to_site.py --excel ./your_list.xlsx --config config.json
 
 # 仅 DAM
-python import_files_to_dam.py --excel ./your_list.xlsx --config config.json
+python3 baklib_import/import_files_to_dam.py --excel ./your_list.xlsx --config config.json
 ```
 
 ## 常用选项
