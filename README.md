@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="./docs/assets/baklib-importer-logo.png" alt="Baklib Importer" width="640">
-</p>
+
 
 # Baklib Importer
 
@@ -12,12 +10,14 @@
 
 ## 这套工具解决什么问题？
 
-| 场景 | 说明 |
-|------|------|
-| 📂 **目录结构要保留** | 去掉盘符/共享根等「路径前缀」后，按剩余路径在 Baklib 里建 **DAM 集合（目录）**；层级过深时按系统限制做截断（见配置 `max_depth`）。 |
-| 🏷️ **标签与目录可定制** | 预处理生成的 Excel 含 **「打标签」「新目录」**；可在表里批量填，覆盖/补充仅靠路径自动推导的结果。 |
+
+| 场景                | 说明                                                                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📂 **目录结构要保留**    | 去掉盘符/共享根等「路径前缀」后，按剩余路径在 Baklib 里建 **DAM 集合（目录）**；层级过深时按系统限制做截断（见配置 `max_depth`）。                                                             |
+| 🏷️ **标签与目录可定制**  | 预处理生成的 Excel 含 **「打标签」「新目录」**；可在表里批量填，覆盖/补充仅靠路径自动推导的结果。                                                                                      |
 | 🖥️ **NAS / 多环境** | 支持 **路径前缀**（`path_prefix`）、**跳过部分子目录**（`skip_directories`）；Excel 里是服务器路径、实际在本机挂载目录读文件时，可用 **路径映射**（`excel_path_prefix` + `local_path_root`）。 |
-| 📤 **先整理、再上传** | **预处理脚本全程离线**；导入脚本走 **Open API**，需密钥。可先 `--dry-run` / `--max-rows` 小批量试跑。 |
+| 📤 **先整理、再上传**    | **预处理脚本全程离线**；导入脚本走 **Open API**，需密钥。可先 `--dry-run` / `--max-rows` 小批量试跑。                                                                    |
+
 
 一句话：**从「路径清单 → 可编辑 Excel → API 批量导入」**，把文件搬进 Baklib，并尽量让线上目录与你磁盘上的组织方式一致。
 
@@ -42,12 +42,14 @@
 
 ## 仓库里有什么？
 
-| 路径 | 作用 |
-|------|------|
-| `preprocessing/` | 📊 清单分析、按类型拆分、生成 Excel；**不访问网络**。 |
-| `baklib_import/` | 🚀 读 Excel、调 Baklib Open API：上传文件、建目录/标签、（可选）建栏目与资源页。 |
-| `docs/` | 📖 流程、Excel 列说明、导入参数、排障等。 |
+
+| 路径                    | 作用                                                      |
+| --------------------- | ------------------------------------------------------- |
+| `preprocessing/`      | 📊 清单分析、按类型拆分、生成 Excel；**不访问网络**。                       |
+| `baklib_import/`      | 🚀 读 Excel、调 Baklib Open API：上传文件、建目录/标签、（可选）建栏目与资源页。   |
+| `docs/`               | 📖 流程、Excel 列说明、导入参数、排障等。                               |
 | `config.example.json` | ⚙️ 配置模板；复制为项目根目录的 `config.json` 后填写密钥与 `path_prefix` 等。 |
+
 
 ---
 
@@ -90,17 +92,19 @@ python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config confi
 
 ## 文档索引
 
-| 文档 | 内容 |
-|------|------|
-| `docs/00-index.md` | 总入口与阅读顺序 |
-| `docs/01-workflow-sop.md` | 端到端流程（SOP） |
-| `docs/03-excel-guide.md` | Excel 列含义与填写约定 |
-| `docs/02-file-list-mac-linux.md` | macOS / Linux 生成清单 |
-| `docs/04-import-quickstart.md` | API 导入快速开始 |
-| `docs/05-import-runbook.md` | 命令行参数与行为说明 |
-| `docs/06-windows-troubleshooting.md` | Windows 常见问题 |
-| `preprocessing/README.md` | 预处理脚本说明 |
-| `baklib_import/README.md` | 导入模块文件说明 |
+
+| 文档                                   | 内容                 |
+| ------------------------------------ | ------------------ |
+| `docs/00-index.md`                   | 总入口与阅读顺序           |
+| `docs/01-workflow-sop.md`            | 端到端流程（SOP）         |
+| `docs/03-excel-guide.md`             | Excel 列含义与填写约定     |
+| `docs/02-file-list-mac-linux.md`     | macOS / Linux 生成清单 |
+| `docs/04-import-quickstart.md`       | API 导入快速开始         |
+| `docs/05-import-runbook.md`          | 命令行参数与行为说明         |
+| `docs/06-windows-troubleshooting.md` | Windows 常见问题       |
+| `preprocessing/README.md`            | 预处理脚本说明            |
+| `baklib_import/README.md`            | 导入模块文件说明           |
+
 
 ---
 
@@ -113,7 +117,15 @@ python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config confi
 
 ## 许可证
 
-本项目采用 **MIT License**，详见仓库根目录 [`LICENSE`](LICENSE) 文件。
+本项目采用 **MIT License**，详见仓库根目录 `[LICENSE](LICENSE)` 文件。
+
+---
+
+## 相关链接
+
+- [Baklib 官网](https://www.baklib.com)
+- [Baklib 模板库（GitHub）](https://github.com/baklib-templates) — CMS / Wiki / 社区主题与示例站点
+- [Baklib 技能库](https://github.com/baklib-tools/skills) 提供基于 Baklib 使用的 AI 技能
 
 ---
 
