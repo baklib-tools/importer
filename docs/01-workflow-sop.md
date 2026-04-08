@@ -24,7 +24,7 @@ import_files_to_site.py（DAM + Page） / import_files_to_dam.py（仅 DAM）导
 
 ## 三、接收文件清单
 
-- **Windows**：常用 `dir /s` 等导出为文本。
+- **Windows**：建议用 PowerShell 导出 UTF-8 清单；亦可用 `dir /s /b`（详见 `docs/06-windows-troubleshooting.md`「生成路径清单」）。
 - **macOS / Linux**：例如 `find /path/to/root -type f > file_list.txt`（详见 `02-file-list-mac-linux.md`）。
 - **编码**：建议统一为 **UTF-8**。
 - **格式**：每行一个文件路径。

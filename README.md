@@ -17,6 +17,7 @@
 | 🏷️ **标签与目录可定制**  | 预处理生成的 Excel 含 **「打标签」「新目录」**；可在表里批量填，覆盖/补充仅靠路径自动推导的结果。                                                                                      |
 | 🖥️ **NAS / 多环境** | 支持 **路径前缀**（`path_prefix`）、**跳过部分子目录**（`skip_directories`）；Excel 里是服务器路径、实际在本机挂载目录读文件时，可用 **路径映射**（`excel_path_prefix` + `local_path_root`）。 |
 | 📤 **先整理、再上传**    | **预处理脚本全程离线**；导入脚本走 **Open API**，需密钥。可先 `--dry-run` / `--max-rows` 小批量试跑。                                                                    |
+| 🔄 **长周期导入后的增量** | 导入耗时数周时，磁盘可能继续新增文件；用 `preprocessing/compare_file_lists.py` 对比「开始时清单」与「重新扫描」可列出仅新增路径，便于第二轮导入。                                        |
 
 
 一句话：**从「路径清单 → 可编辑 Excel → API 批量导入」**，把文件搬进 Baklib，并尽量让线上目录与你磁盘上的组织方式一致。
@@ -62,8 +63,17 @@
 
 ## 快速开始（在项目根目录 `importer/`）
 
-**1）准备路径清单**  
-例如 macOS/Linux：`find /你的根目录 -type f > file_list.txt`（见 `docs/02-file-list-mac-linux.md`）
+**1）准备路径清单**（每行一条路径，**UTF-8** 最稳妥）
+
+- **macOS / Linux**：例如 `find /你的根目录 -type f > file_list.txt`（见 `docs/02-file-list-mac-linux.md`）
+- **Windows**：建议用 **PowerShell** 导出为 UTF-8，避免中文路径乱码；命令与注意事项见 `docs/06-windows-troubleshooting.md`（「生成路径清单」一节）
+
+```powershell
+# 在 PowerShell 中执行：将 D:\你的根目录 换成实际路径
+Get-ChildItem -Path "D:\你的根目录" -File -Recurse -ErrorAction SilentlyContinue |
+  ForEach-Object { $_.FullName } |
+  Set-Content -Path ".\file_list.txt" -Encoding utf8
+```
 
 **2）预处理 → 得到 Excel**
 
@@ -101,8 +111,8 @@ python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config confi
 | `docs/02-file-list-mac-linux.md`     | macOS / Linux 生成清单 |
 | `docs/04-import-quickstart.md`       | API 导入快速开始         |
 | `docs/05-import-runbook.md`          | 命令行参数与行为说明         |
-| `docs/06-windows-troubleshooting.md` | Windows 常见问题       |
-| `preprocessing/README.md`            | 预处理脚本说明            |
+| `docs/06-windows-troubleshooting.md` | Windows：路径清单、常见问题与排障 |
+| `preprocessing/README.md`            | 预处理脚本说明（含清单对比 `compare_file_lists.py`） |
 | `baklib_import/README.md`            | 导入模块文件说明           |
 
 
@@ -129,4 +139,4 @@ python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config confi
 
 ---
 
-**维护**：Baklib 工具开源整理 · **最后更新**：2026-03-30
+**维护**：Baklib 工具开源整理 · **最后更新**：2026-04-08
