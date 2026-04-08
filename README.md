@@ -65,8 +65,8 @@
 
 **1）准备路径清单**（每行一条路径，**UTF-8** 最稳妥）
 
-- **macOS / Linux**：例如 `find /你的根目录 -type f > file_list.txt`（见 `docs/02-file-list-mac-linux.md`）
-- **Windows**：建议用 **PowerShell** 导出为 UTF-8，避免中文路径乱码；命令与注意事项见 `docs/06-windows-troubleshooting.md`（「生成路径清单」一节）
+- **macOS / Linux**：例如 `find /你的根目录 -type f > file_list.txt`（见 `[docs/02-file-list-mac-linux.md](docs/02-file-list-mac-linux.md)`）
+- **Windows**：建议用 **PowerShell** 导出为 UTF-8，避免中文路径乱码；命令与注意事项见 `[docs/06-windows-troubleshooting.md](docs/06-windows-troubleshooting.md)`（「生成路径清单」一节）
 
 ```powershell
 # 在 PowerShell 中执行：将 D:\你的根目录 换成实际路径
@@ -82,7 +82,7 @@ python3 preprocessing/extract-file-paths.py ./file_list.txt --split 10000 --form
 ```
 
 **3）填写 Excel**  
-打开生成目录下的 `.xlsx`，按需填写「打标签」「新目录」（见 `docs/03-excel-guide.md`）
+打开生成目录下的 `.xlsx`，按需填写「打标签」「新目录」（见 `[docs/03-excel-guide.md](docs/03-excel-guide.md)`）
 
 **4）配置并导入**（`config.json` 放在**项目根目录**；`--config` 的相对路径相对项目根，可在任意目录执行命令）
 
@@ -96,7 +96,7 @@ python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config confi
 
 首次建议：`--dry-run` 或 `--max-rows 10` 试跑。
 
-更多参数（跳过确认、列映射、延迟、预创建目录等）见 `docs/05-import-runbook.md`。
+更多参数（跳过确认、列映射、延迟、预创建目录等）见 `[docs/05-import-runbook.md](docs/05-import-runbook.md)`。
 
 ---
 
@@ -105,15 +105,15 @@ python3 baklib_import/import_files_to_site.py --excel ./your.xlsx --config confi
 
 | 文档                                   | 内容                 |
 | ------------------------------------ | ------------------ |
-| `docs/00-index.md`                   | 总入口与阅读顺序           |
-| `docs/01-workflow-sop.md`            | 端到端流程（SOP）         |
-| `docs/03-excel-guide.md`             | Excel 列含义与填写约定     |
-| `docs/02-file-list-mac-linux.md`     | macOS / Linux 生成清单 |
-| `docs/04-import-quickstart.md`       | API 导入快速开始         |
-| `docs/05-import-runbook.md`          | 命令行参数与行为说明         |
-| `docs/06-windows-troubleshooting.md` | Windows：路径清单、常见问题与排障 |
-| `preprocessing/README.md`            | 预处理脚本说明（含清单对比 `compare_file_lists.py`） |
-| `baklib_import/README.md`            | 导入模块文件说明           |
+| [`docs/00-index.md`](docs/00-index.md)                   | 总入口与阅读顺序           |
+| [`docs/01-workflow-sop.md`](docs/01-workflow-sop.md)     | 端到端流程（SOP）         |
+| [`docs/03-excel-guide.md`](docs/03-excel-guide.md)       | Excel 列含义与填写约定     |
+| [`docs/02-file-list-mac-linux.md`](docs/02-file-list-mac-linux.md) | macOS / Linux 生成清单 |
+| [`docs/04-import-quickstart.md`](docs/04-import-quickstart.md)     | API 导入快速开始         |
+| [`docs/05-import-runbook.md`](docs/05-import-runbook.md) | 命令行参数与行为说明         |
+| [`docs/06-windows-troubleshooting.md`](docs/06-windows-troubleshooting.md) | Windows：路径清单、常见问题与排障 |
+| [`preprocessing/README.md`](preprocessing/README.md)     | 预处理脚本说明（含清单对比 `compare_file_lists.py`） |
+| [`baklib_import/README.md`](baklib_import/README.md)     | 导入模块文件说明           |
 
 
 ---
